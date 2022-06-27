@@ -155,6 +155,7 @@ class Kiwoom(QAxWidget):
         self.dynamicCall("CommRqData(QString, QString, int, QString", "계좌평가잔고내역요청", "opw00018", sPrevNext, self.screen_my_info)
         self.detail_account_info_event_loop.exec_()
 
+    #Trading Data Slot
     def trdata_slot(self, sSrcNo, sRQName, sTrCode, sRecordName, sPrevNext):
         if sRQName == "예수금상세현황요청":
             deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "예수금")
@@ -224,6 +225,7 @@ class Kiwoom(QAxWidget):
             else:
                 self.detail_account_info_event_loop.exit()
 
+    #실시간 주가 확인
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == "장시작시간":
             fid = self.realType.REALTYPE[sRealType]['장운영구분']
@@ -258,14 +260,17 @@ class Kiwoom(QAxWidget):
                     self.sendSellOrder(sCode)
 
 
+    #실시간 확인 중단
     def stop_screen_cancel(self, sScrNo=None):
         self.dynamicCall("DisconnectRealData(QString)", sScrNo)
 
+    #주가 확인
     def get_stock_value(self, sCode, sPrevNext="0"):
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", sCode)
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "주식기본정보요청", "opt10001", "0", 10)
         self.sell_order_event_loop.exec_()
 
+    #매수 주문 전송
     def sendBuyOrder(self, sCode, buy_price, quantity):
         self.logging.logger.debug("종목코드: %s, 매수 단가: %d, 수량: %d, 총: %d" % (sCode, buy_price, quantity, buy_price * quantity))
         if sCode in self.account_stock_dict:
@@ -296,7 +301,8 @@ class Kiwoom(QAxWidget):
         else:
             print("실패")
             del self.account_stock_dict[sCode]
-
+    
+    #매도 주문 전송
     def sendSellOrder(self, sCode):
         if sCode in self.account_stock_dict:
             quantity = self.account_stock_dict[sCode]['보유수량']
@@ -314,6 +320,7 @@ class Kiwoom(QAxWidget):
         else:
             print("해당 주식 코드는 현재 계좌에 존재하지 않습니다.")
 
+    #스크린 번호 Setting
     def screen_number_setting(self):
         self.cnt = 0
         for code in self.account_stock_dict.keys():
